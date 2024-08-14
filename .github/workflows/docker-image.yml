@@ -17,4 +17,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . -f Dockerfile.dev -t astralox/docker-react-course
     - name: Run tests
-      run: docker run astralox/docker-react-course npm run test -- --coverage
+      run: docker run -e CI=true astralox/docker-react-course npm run test
