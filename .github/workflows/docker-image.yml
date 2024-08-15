@@ -1,9 +1,7 @@
-name: Docker Image CI
+name: Deploy Frontend
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
     branches: [ "master" ]
 
 jobs:
@@ -14,7 +12,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    
     - name: Build the Docker image
       run: docker build . -f Dockerfile.dev -t astralox/docker-react-course
+    
     - name: Run tests
       run: docker run -e CI=true astralox/docker-react-course npm run test
+
+    - name: Generate deployment package
+      run: zip -r deploy.zip . -x '*.git*'
+
+    - name: Deploy to ElasticBeanstalk
+      uses: einaregilsson/beanstalk-deploy@v18
+      with: 
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+        application_name: docker-react-course
+        environment_name: Docker-react-course-env
+        existing_bucket_name: elasticbeanstalk-eu-north-1-842676019810
+        region: eu-north-1
+        version_label: ${{ github.sha }}
+        deployment_package: deploy.zip
